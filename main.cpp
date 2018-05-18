@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+#include <qt5/QtCore/QCoreApplication>
+#include <qt5/QtCore/QDebug>
+
 #include <boost/filesystem.hpp>
 #include <boost/stacktrace.hpp>
 
@@ -17,7 +20,7 @@ const std::string dumpFileName() { return "backtrace.dump"; }
 
 void safetyQuit(int signum)
 {
-    std::cout << "Crashed!" << std::endl;
+    qDebug() << "Crashed!";
     ::signal(signum, SIG_DFL);
     boost::stacktrace::safe_dump_to(dumpFileName().c_str());
     ::raise(signum);
@@ -82,8 +85,8 @@ void unsafelyAccess()
 
 int main(int argc, char* argv[])
 {
-    ::unused(argc);
-    ::unused(argv);
+    QCoreApplication app(argc, argv);
+    Q_UNUSED(app);
 
     ::signal(SIGSEGV, &safetyQuit);
     ::signal(SIGFPE,  &safetyQuit);
