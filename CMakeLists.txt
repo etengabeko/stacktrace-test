@@ -5,30 +5,50 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENTIONS OFF)
 
-set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets CONFIG REQUIRED)
 
 find_package(Boost 1.65 REQUIRED COMPONENTS
     filesystem
     system
 )
 
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set(SOURCES
-    main.cpp
+    # widgets:
+    src/crashreportwidget.cpp
+    src/mainwidget.cpp
+    # main:
+    src/main.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+set(HEADERS
+    # basic:
+    src/common.h
+    # widgets:
+    src/crashreportwidget.h
+    src/mainwidget.h
+)
 
-qt5_use_modules(${PROJECT_NAME} Widgets)
+qt5_wrap_ui(FORMS
+    src/crashreportwidget.ui
+    src/mainwidget.ui
+)
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${FORMS})
+
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets ${Boost_LIBRARIES})
 
 if (UNIX)
-    target_link_libraries(${PROJECT_NAME} dl)
+    target_link_libraries(${PROJECT_NAME} dl backtrace)
+    add_definitions(-DBOOST_STACKTRACE_USE_BACKTRACE)
+else (UNIX)
+    target_link_libraries(${PROJECT_NAME} ole32 dbgeng)
+    add_definitions(-DBOOST_STACKTRACE_USE_WINDBG)
 endif(UNIX)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
