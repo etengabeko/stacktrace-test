@@ -1,6 +1,13 @@
 #include "mainwidget.h"
 #include "ui_mainwidget.h"
 
+#include <fstream>
+#include <vector>
+
+#include <QDebug>
+
+#include <boost/filesystem.hpp>
+
 #include "common.h"
 
 MainWidget::MainWidget(QWidget* parent) :
@@ -42,20 +49,60 @@ void MainWidget::slotCrashCase()
 
 void MainWidget::divideByZeroCase()
 {
-
+    try
+    {
+        std::vector<int> v { 1, 0 };
+        qDebug() << (v[0]/v[1]);
+    }
+    catch (std::exception& e)
+    {
+        throwWithTrace(e);
+    }
 }
 
 void MainWidget::dereferenceNullptrCase()
 {
-
+    try
+    {
+        std::unique_ptr<int> invalid;
+        qDebug() << *invalid;
+    }
+    catch (std::exception& e)
+    {
+        throwWithTrace(e);
+    }
 }
 
 void MainWidget::outOfRangeCase()
 {
-
+    try
+    {
+        enum { InvalidIndex = 1 };
+        std::vector<int> v;
+        qDebug() << v.at(InvalidIndex);
+    }
+    catch (std::exception& e)
+    {
+        throwWithTrace(e);
+    }
 }
 
 void MainWidget::openNonexistentCase()
 {
+    try
+    {
+        std::string nonExistentFileName;
+        do
+        {
+            static int index = 0;
+            nonExistentFileName = "invalid_filename_" + std::to_string(++index);
+        }
+        while (boost::filesystem::exists(boost::filesystem::path(nonExistentFileName)));
 
+        qDebug() << (std::ifstream(nonExistentFileName) ? "True" : "False");
+    }
+    catch (std::exception& e)
+    {
+        throwWithTrace(e);
+    }
 }

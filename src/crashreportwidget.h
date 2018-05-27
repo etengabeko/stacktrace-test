@@ -6,6 +6,8 @@
 
 #include <QWidget>
 
+#include <boost/stacktrace.hpp>
+
 class QString;
 
 namespace Ui
@@ -22,11 +24,15 @@ public:
                                QWidget* parent = nullptr);
     ~CrashReportWidget();
 
-    void process(std::exception& e);
+    void process(const boost::stacktrace::stacktrace& st);
 
 private slots:
+    void slotChangeFileName(const QString& fileName);
     void slotSelectFileName();
     void slotSaveReport();
+
+private:
+    QString makeCrashReport(const boost::stacktrace::stacktrace& st) const;
 
 private:
     std::unique_ptr<Ui::CrashReportWidget> m_ui;
