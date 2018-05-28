@@ -1,63 +1,59 @@
-#include <signal.h>
-
-#include <memory>
-
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QDebug>
 #include <QString>
 
-#include "common.h"
-#include "crashreportwidget.h"
 #include "mainwidget.h"
+#include "signalhandler.h"
 
 namespace
 {
-const QString dumpFileName() { return "backtrace.dump"; }
 
-static CrashReportWidget* crashReportSinglton = nullptr;
-
-void safetyQuit(int signum)
+const QString customCrashReportFileName()
 {
-    Q_UNUSED(signum);
-
-    if (crashReportSinglton != nullptr)
-    {
-        crashReportSinglton->process(boost::stacktrace::stacktrace());
-        crashReportSinglton->show();
-    }
-    else
-    {
-        boost::stacktrace::safe_dump_to(dumpFileName().toStdString().c_str());
-    }
-
-    qApp->quit();
+    return "crash_report.dump";
 }
 
 }
 
 int main(int argc, char* argv[])
 {
-    ::signal(SIGSEGV, &::safetyQuit);
-    ::signal(SIGFPE,  &::safetyQuit);
-
     QApplication app(argc, argv);
-    CrashReportWidget reporter(::dumpFileName());
-    crashReportSinglton = &reporter;
+    app.setApplicationName("stacktrace");
+    app.setApplicationVersion("1.0");
 
-    try
+    QCommandLineParser argparser;
+    argparser.setApplicationDescription(app.tr("Test for generating safe-handling exceptions with stack trace."));
+    argparser.addHelpOption();
+    argparser.addVersionOption();
+
+    QCommandLineOption outputFileNameOption(QStringList({"f", "outfile"}),
+                                            app.tr("Crash report filename"),
+                                            app.tr("filename"));
+    argparser.addOption(outputFileNameOption);
+
+    if (!argparser.parse(app.arguments()))
     {
-        MainWidget wgt;
-        wgt.show();
-        app.exec();
+        qWarning().noquote() << (argparser.errorText());
+        argparser.showHelp(EXIT_FAILURE);
     }
-    catch (std::exception& e)
+    if (argparser.isSet("help"))
     {
-        const boost::stacktrace::stacktrace* st = boost::get_error_info<traced>(e);
-        if (st != nullptr)
-        {
-            reporter.process(*st);
-            reporter.show();
-        }
+        argparser.showHelp();
+    }
+    else if (argparser.isSet("version"))
+    {
+        argparser.showVersion();
     }
 
-    return EXIT_SUCCESS;
+    const QString outputFileName = argparser.isSet(outputFileNameOption) ? argparser.value(outputFileNameOption)
+                                                                         : ::customCrashReportFileName();
+    SignalHandler* sigHandler = SignalHandler::instance();
+    Q_CHECK_PTR(sigHandler);
+    sigHandler->setCrashReportFileName(outputFileName.toStdString());
+
+    MainWidget wgt;
+    wgt.show();
+
+    return app.exec();
 }

@@ -9,17 +9,24 @@
 #include <boost/filesystem.hpp>
 
 #include "common.h"
+#include "crashreportwidget.h"
 
 MainWidget::MainWidget(QWidget* parent) :
     QWidget(parent),
-    m_ui(new Ui::MainWidget())
+    m_ui(new Ui::MainWidget()),
+    m_reportWidget(new CrashReportWidget())
 {
     m_ui->setupUi(this);
 
     QObject::connect(m_ui->checkButton, &QPushButton::clicked,
-                     this, &MainWidget::slotCrashCase);
+                     this, &MainWidget::slotSafeCrash);
     QObject::connect(m_ui->cancelButton, &QPushButton::clicked,
                      this, &MainWidget::close);
+
+    QObject::connect(m_ui->catchedRadioButton, &QRadioButton::toggled,
+                     m_ui->catchedFrame, &QFrame::setEnabled);
+    QObject::connect(m_ui->nonCatchedRadioButton, &QRadioButton::toggled,
+                     m_ui->nonCatchedFrame, &QFrame::setEnabled);
 }
 
 MainWidget::~MainWidget()
@@ -27,23 +34,41 @@ MainWidget::~MainWidget()
 
 }
 
-void MainWidget::slotCrashCase()
+void MainWidget::slotSafeCrash()
 {
-    if (m_ui->divideZeroRadioButton->isChecked())
+    try
     {
-        divideByZeroCase();
+        if (m_ui->catchedRadioButton->isChecked())
+        {
+            if (m_ui->outOfRangeRadioButton->isChecked())
+            {
+                outOfRangeCase();
+            }
+            else if (m_ui->openNonexistRadioButton->isChecked())
+            {
+                openNonexistentCase();
+            }
+        }
+        else if (m_ui->nonCatchedRadioButton->isChecked())
+        {
+            if (m_ui->divideZeroRadioButton->isChecked())
+            {
+                divideByZeroCase();
+            }
+            else if (m_ui->derefNullRadioButton->isChecked())
+            {
+                dereferenceNullptrCase();
+            }
+        }
     }
-    else if (m_ui->derefNullRadioButton->isChecked())
+    catch (std::exception& e)
     {
-        dereferenceNullptrCase();
-    }
-    else if (m_ui->outOfRangeRadioButton->isChecked())
-    {
-        outOfRangeCase();
-    }
-    else if (m_ui->openNonexistRadioButton->isChecked())
-    {
-        openNonexistentCase();
+        const boost::stacktrace::stacktrace* st = boost::get_error_info<traced>(e);
+        if (st != nullptr)
+        {
+            m_reportWidget->process(*st);
+            m_reportWidget->show();
+        }
     }
 }
 
@@ -99,7 +124,10 @@ void MainWidget::openNonexistentCase()
         }
         while (boost::filesystem::exists(boost::filesystem::path(nonExistentFileName)));
 
-        qDebug() << (std::ifstream(nonExistentFileName) ? "True" : "False");
+        std::ifstream stream;
+        stream.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+        stream.open(nonExistentFileName);
+        qDebug() << (stream ? "True" : "False");
     }
     catch (std::exception& e)
     {

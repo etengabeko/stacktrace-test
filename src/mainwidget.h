@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+class CrashReportWidget;
+
 namespace Ui
 {
 class MainWidget;
@@ -19,7 +21,7 @@ public:
     ~MainWidget();
 
 private slots:
-    void slotCrashCase();
+    void slotSafeCrash();
 
 private:
     void divideByZeroCase();
@@ -29,6 +31,8 @@ private:
 
 private:
     std::unique_ptr<Ui::MainWidget> m_ui;
+
+    std::unique_ptr<CrashReportWidget> m_reportWidget;
 
 };
 

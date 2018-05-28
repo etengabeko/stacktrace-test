@@ -19,6 +19,8 @@ find_package(Boost 1.65 REQUIRED COMPONENTS
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set(SOURCES
+    #basic:
+    src/signalhandler.cpp
     # widgets:
     src/crashreportwidget.cpp
     src/mainwidget.cpp
@@ -29,6 +31,7 @@ set(SOURCES
 set(HEADERS
     # basic:
     src/common.h
+    src/signalhandler.h
     # widgets:
     src/crashreportwidget.h
     src/mainwidget.h
@@ -44,7 +47,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${FORMS})
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets ${Boost_LIBRARIES})
 
 if (UNIX)
-    target_link_libraries(${PROJECT_NAME} dl backtrace)
+    target_link_libraries(${PROJECT_NAME} dl rt backtrace)
     add_definitions(-DBOOST_STACKTRACE_USE_BACKTRACE)
 else (UNIX)
     if (MSVC)
@@ -57,5 +60,5 @@ else (UNIX)
 endif(UNIX)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_options(-Wall -Wextra -Werror)
+    add_compile_options(-Wall -Wextra -Werror -pedantic-errors)
 endif (CMAKE_COMPILER_IS_GNUCXX)
