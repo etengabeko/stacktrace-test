@@ -21,9 +21,6 @@ void abortHandler(int signum)
     case SIGSEGV:
         name = "SIGSEGV";
         break;
-    case SIGBUS:
-        name = "SIGBUS";
-        break;
     case SIGILL:
         name = "SIGILL";
         break;

@@ -52,9 +52,9 @@ if (UNIX)
 else (UNIX)
     if (MSVC)
         target_link_libraries(${PROJECT_NAME} dbgeng)
-        add_definitions(-DBOOST_STACKTRACE_USE_WINDBG)
+        add_definitions(-DBOOST_STACKTRACE_USE_WINDBG -DBOOST_ALL_NO_LIB)
     elseif (MSVC)
-        # FIXME
+        # FIXME: m.b. build MinGW version of libbacktrace
     endif (MSVC)
     target_link_libraries(${PROJECT_NAME} ole32)
 endif(UNIX)
