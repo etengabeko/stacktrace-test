@@ -6,6 +6,11 @@
 
 using traced = boost::error_info<struct tag_stacktrace, boost::stacktrace::stacktrace>;
 
+/**
+ * @brief throwWithTrace - преобразует переданный объект-исключение
+ *        в новый объект-исключение, содержащий в себе текущий стек вызовов.
+ * @param e - исходный объект-исключение.
+ */
 template <class T>
 void throwWithTrace(const T& e)
 {

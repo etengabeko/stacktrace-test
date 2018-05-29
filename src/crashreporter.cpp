@@ -13,6 +13,10 @@
 namespace
 {
 
+/**
+ * @brief currentTime - возвращает текущее локальное время.
+ * @return текущее время.
+ */
 const std::tm currentTime()
 {
     using namespace std::chrono;
@@ -23,6 +27,11 @@ const std::tm currentTime()
     return result;
 }
 
+/**
+ * @brief timeToString - конвертирует переданный объект представления времени в строку.
+ * @param time - конвертируемый объект времени.
+ * @return строковое представление объекта времени в формате 'yyyyMMdd_hhmmss'.
+ */
 std::string timeToString(const std::tm& time)
 {
     std::stringstream stream;
@@ -31,6 +40,11 @@ std::string timeToString(const std::tm& time)
     return stream.str();
 }
 
+/**
+ * @brief abortHandler - обработчик сигналов. Сохраняет стек вызовов в файл
+ *        и завершает работу приложения системным вызовом exit(signum).
+ * @param signum - идентификатор сигнала.
+ */
 void abortHandler(int signum)
 {
     const char* name = NULL;
