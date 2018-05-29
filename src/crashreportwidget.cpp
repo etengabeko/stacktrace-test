@@ -7,7 +7,7 @@
 #include <QString>
 
 #include "common.h"
-#include "signalhandler.h"
+#include "crashreporter.h"
 
 namespace
 {
@@ -28,9 +28,9 @@ CrashReportWidget::CrashReportWidget(QWidget* parent) :
 {
     m_ui->setupUi(this);
 
-    SignalHandler* handler = SignalHandler::instance();
-    Q_CHECK_PTR(handler);
-    m_ui->fileNameLineEdit->setText(QString::fromStdString(handler->crashReportFileName()));
+    CrashReporter* reporter = CrashReporter::instance();
+    Q_CHECK_PTR(reporter);
+    m_ui->fileNameLineEdit->setText(QString::fromStdString(reporter->crashReportFileName()));
 
     QObject::connect(m_ui->cancelButton, &QPushButton::clicked,
                      this, &CrashReportWidget::close);
@@ -66,11 +66,11 @@ void CrashReportWidget::slotSelectFileName()
 
 void CrashReportWidget::slotSaveReport()
 {
-    SignalHandler* handler = SignalHandler::instance();
-    Q_CHECK_PTR(handler);
+    CrashReporter* reporter = CrashReporter::instance();
+    Q_CHECK_PTR(reporter);
 
-    handler->setCrashReportFileName(m_ui->fileNameLineEdit->text().toStdString());
-    auto res = handler->saveCrashReport(m_ui->reportTextEdit->toPlainText().toStdString());
+    reporter->setCrashReportFileName(m_ui->fileNameLineEdit->text().toStdString());
+    auto res = reporter->saveCrashReport(m_ui->reportTextEdit->toPlainText().toStdString());
     if (res.first)
     {
         QMessageBox::information(this,
@@ -89,7 +89,7 @@ void CrashReportWidget::slotSaveReport()
 
 void CrashReportWidget::process(const boost::stacktrace::stacktrace& st)
 {
-    const QString report = QString::fromStdString(SignalHandler::instance()->makeCrashReport(st));
+    const QString report = QString::fromStdString(CrashReporter::instance()->makeCrashReport(st));
     m_ui->reportTextEdit->setPlainText(report);
 
     m_ui->fileNameLineEdit->setText(::makeCrashReportFileName());

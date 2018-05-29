@@ -1,4 +1,4 @@
-#include "signalhandler.h"
+#include "crashreporter.h"
 
 #include <cassert>
 #include <csignal>
@@ -29,11 +29,11 @@ void abortHandler(int signum)
         break;
     }
 
-    const SignalHandler* handler = SignalHandler::instance();
-    assert(handler != nullptr);
+    const CrashReporter* reporter = CrashReporter::instance();
+    assert(reporter != nullptr);
 
-    const std::string crashReport = handler->makeCrashReport(boost::stacktrace::stacktrace());
-    auto res = handler->saveCrashReport(crashReport);
+    const std::string crashReport = reporter->makeCrashReport(boost::stacktrace::stacktrace());
+    auto res = reporter->saveCrashReport(crashReport);
 
     if (name != nullptr)
     {
@@ -48,7 +48,7 @@ void abortHandler(int signum)
     if (res.first)
     {
         std::cerr  << "\nCrash repost saved to "
-                   << handler->crashReportFileName()
+                   << reporter->crashReportFileName()
                    << std::endl;
     }
 
@@ -57,9 +57,9 @@ void abortHandler(int signum)
 
 }
 
-std::unique_ptr<SignalHandler> SignalHandler::m_instance(nullptr);
+std::unique_ptr<CrashReporter> CrashReporter::m_instance(nullptr);
 
-SignalHandler::SignalHandler()
+CrashReporter::CrashReporter()
 {
     std::signal(SIGABRT, &::abortHandler);
     std::signal(SIGSEGV, &::abortHandler);
@@ -67,39 +67,39 @@ SignalHandler::SignalHandler()
     std::signal(SIGFPE,  &::abortHandler);
 }
 
-SignalHandler* SignalHandler::instance()
+CrashReporter* CrashReporter::instance()
 {
     if (m_instance == nullptr)
     {
-        m_instance.reset(new SignalHandler());
+        m_instance.reset(new CrashReporter());
     }
 
     return m_instance.get();
 }
 
-const std::string& SignalHandler::crashReportFileName() const
+const std::string& CrashReporter::crashReportFileName() const
 {
     return m_filename;
 }
 
-void SignalHandler::setCrashReportFileName(const std::string& outputFileName)
+void CrashReporter::setCrashReportFileName(const std::string& outputFileName)
 {
     m_filename = outputFileName;
 }
 
-std::string SignalHandler::makeCrashReport(const boost::stacktrace::stacktrace& st) const
+std::string CrashReporter::makeCrashReport(const boost::stacktrace::stacktrace& st) const
 {
     std::stringstream stream;
     stream << st;
     return stream.str();
 }
 
-std::pair<bool, std::string> SignalHandler::saveCrashReport(const boost::stacktrace::stacktrace& st) const
+std::pair<bool, std::string> CrashReporter::saveCrashReport(const boost::stacktrace::stacktrace& st) const
 {
     return saveCrashReport(makeCrashReport(st));
 }
 
-std::pair<bool, std::string> SignalHandler::saveCrashReport(const std::string& report) const
+std::pair<bool, std::string> CrashReporter::saveCrashReport(const std::string& report) const
 {
     std::ofstream stream(m_filename);
     if (!stream)

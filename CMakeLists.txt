@@ -20,7 +20,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set(SOURCES
     #basic:
-    src/signalhandler.cpp
+    src/crashreporter.cpp
     # widgets:
     src/crashreportwidget.cpp
     src/mainwidget.cpp
@@ -31,7 +31,7 @@ set(SOURCES
 set(HEADERS
     # basic:
     src/common.h
-    src/signalhandler.h
+    src/crashreporter.h
     # widgets:
     src/crashreportwidget.h
     src/mainwidget.h

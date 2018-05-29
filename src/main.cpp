@@ -3,8 +3,8 @@
 #include <QDebug>
 #include <QString>
 
+#include "crashreporter.h"
 #include "mainwidget.h"
-#include "signalhandler.h"
 
 namespace
 {
@@ -48,9 +48,9 @@ int main(int argc, char* argv[])
 
     const QString outputFileName = argparser.isSet(outputFileNameOption) ? argparser.value(outputFileNameOption)
                                                                          : ::customCrashReportFileName();
-    SignalHandler* sigHandler = SignalHandler::instance();
-    Q_CHECK_PTR(sigHandler);
-    sigHandler->setCrashReportFileName(outputFileName.toStdString());
+    CrashReporter* reporter = CrashReporter::instance();
+    Q_CHECK_PTR(reporter);
+    reporter->setCrashReportFileName(outputFileName.toStdString());
 
     MainWidget wgt;
     wgt.show();

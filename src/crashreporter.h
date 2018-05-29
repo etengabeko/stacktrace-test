@@ -1,5 +1,5 @@
-#ifndef STACKTRACE_SIGNAL_HANDLER_H
-#define STACKTRACE_SIGNAL_HANDLER_H
+#ifndef STACKTRACE_CRASH_REPORTER_H
+#define STACKTRACE_CRASH_REPORTER_H
 
 #include <memory>
 #include <string>
@@ -7,15 +7,15 @@
 
 #include <boost/stacktrace.hpp>
 
-class SignalHandler
+class CrashReporter
 {
 private:
-    SignalHandler();
+    CrashReporter();
 
 public:
-    ~SignalHandler() = default;
+    ~CrashReporter() = default;
 
-    static SignalHandler* instance();
+    static CrashReporter* instance();
 
     const std::string& crashReportFileName() const;
     void setCrashReportFileName(const std::string& outputFileName);
@@ -26,10 +26,10 @@ public:
     std::pair<bool, std::string> saveCrashReport(const boost::stacktrace::stacktrace& st) const;
 
 private:
-    static std::unique_ptr<SignalHandler> m_instance;
+    static std::unique_ptr<CrashReporter> m_instance;
 
     std::string m_filename;
 
 };
 
-#endif // STACKTRACE_SIGNAL_HANDLER_H
+#endif // STACKTRACE_CRASH_REPORTER_H
