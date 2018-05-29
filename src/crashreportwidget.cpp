@@ -1,26 +1,12 @@
 #include "crashreportwidget.h"
 #include "ui_crashreportwidget.h"
 
-#include <QDateTime>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
 
 #include "common.h"
 #include "crashreporter.h"
-
-namespace
-{
-
-const QString makeCrashReportFileName()
-{
-    return QString("%1_%2_%3.dump")
-            .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"))
-            .arg(qApp->applicationName())
-            .arg(qApp->applicationPid());
-}
-
-}
 
 CrashReportWidget::CrashReportWidget(QWidget* parent) :
     QWidget(parent),
@@ -89,9 +75,12 @@ void CrashReportWidget::slotSaveReport()
 
 void CrashReportWidget::process(const boost::stacktrace::stacktrace& st)
 {
-    const QString report = QString::fromStdString(CrashReporter::instance()->makeCrashReport(st));
+    CrashReporter* reporter = CrashReporter::instance();
+    Q_CHECK_PTR(reporter);
+
+    const QString report = QString::fromStdString(reporter->makeCrashReport(st));
     m_ui->reportTextEdit->setPlainText(report);
 
-    m_ui->fileNameLineEdit->setText(::makeCrashReportFileName());
+    m_ui->fileNameLineEdit->setText(QString::fromStdString(reporter->makeCrashReportCustomFileName()));
     m_ui->saveReportButton->setFocus();
 }
